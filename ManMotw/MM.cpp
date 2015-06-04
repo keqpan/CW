@@ -13,6 +13,7 @@
 #include <windows.h>
 
 using namespace std;
+using namespace boost::heap;
 
 bool myVecCmp(vector <int> & i, vector <int> & j) { 
 	return (i < j);
