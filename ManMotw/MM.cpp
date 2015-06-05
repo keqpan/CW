@@ -61,6 +61,7 @@ int main() {
 	char fname[20];
 	int n, l, j;
 	int curId;
+	struct item * saveNext;
 	int bSize, curSize;
 	struct item tmpId;
 	string str;
@@ -98,15 +99,29 @@ int main() {
 
 			cout << "11 < 22" << endl;
 
-			1 + 1;
 			sort(Buffer.begin(), Buffer.end(), myVecCmp);
-
+			curId = -1;
+			saveNext = NULL;
 			bSize = Buffer.size();
 			for (int k = 0; k < bSize; k++) {
 				curSize = Buffer[k].size();
-				tmpId.id = Buffer[k][0];
-				tmpId.next = NULL;
-				Heap.push(tmpId);
+
+				if (Buffer[k][0] == curId) {
+					saveNext->next = (struct item *) malloc(sizeof(struct item));
+					saveNext = saveNext->next;
+					saveNext->id = curId;
+					saveNext->next = NULL;
+				}
+				else {
+					if (curId != -1)
+						Heap.push(tmpId);
+
+					curId = Buffer[k][0];
+					tmpId.id = curId;
+					tmpId.next = NULL;
+					saveNext = &tmpId;
+				}
+				
 				for (int z = 0; z < curSize; z++) {
 					cout << Buffer[k][z] << " ";
 				}
@@ -114,8 +129,16 @@ int main() {
 				cout << endl;
 			}
 
-			cout << Heap.top().id << endl;
-			Heap.pop();
+			if (curId != -1)
+				Heap.push(tmpId);
+
+			while (!Heap.empty())
+			{
+
+				cout << Heap.top().id << endl;
+				Heap.pop();
+			}
+
 			Buffer.clear();
 			getchar();
 		}
