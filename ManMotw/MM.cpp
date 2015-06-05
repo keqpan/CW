@@ -19,6 +19,13 @@ bool myVecCmp(vector <int> & i, vector <int> & j) {
 	return (i < j);
 }
 
+struct item {
+	int id;
+	int f;
+	int d;
+	int level;
+};
+
 
 
 
@@ -27,6 +34,8 @@ int main() {
 	stringstream MyStSt;
 
 	vector < vector<int> > Buffer;
+	vector < struct item > Trie;
+
 	vector <int> tmp;
 
 	char fname[20];
@@ -78,6 +87,8 @@ int main() {
 
 				cout << endl;
 			}
+
+
 
 			Buffer.clear();
 			getchar();
