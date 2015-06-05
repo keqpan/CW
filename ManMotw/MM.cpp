@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <queue> 
 #include <algorithm>
 #include <cstdio>
 
@@ -15,16 +16,29 @@
 using namespace std;
 using namespace boost::heap;
 
-bool myVecCmp(vector <int> & i, vector <int> & j) { 
-	return (i < j);
-}
-
-struct item {
+struct itemTr {
 	int id;
 	int f;
 	int d;
 	int level;
 };
+
+struct item {
+	int id;
+	struct item * next;
+};
+
+bool myVecCmp(const vector <int> & i, const vector <int> & j) { 
+	return (i < j);
+}
+
+typedef bool(*queComp)(const struct item &, const struct item &);
+bool myQueCmp(const struct item & a, const struct item & b) {
+	
+	return (a.id > b.id);
+
+}
+
 
 
 
@@ -36,11 +50,19 @@ int main() {
 	vector < vector<int> > Buffer;
 	vector < struct item > Trie;
 
+	/*bool(*foo)(const struct item &, const struct item &);
+	foo = &myQueCmp;*/
+
+	std::priority_queue <struct item, vector <struct item>, queComp> Heap(myQueCmp);
+
 	vector <int> tmp;
+
 
 	char fname[20];
 	int n, l, j;
+	int curId;
 	int bSize, curSize;
+	struct item tmpId;
 	string str;
 	/*cin >> fname;
 	myfile.open(fname);*/
@@ -82,14 +104,18 @@ int main() {
 			bSize = Buffer.size();
 			for (int k = 0; k < bSize; k++) {
 				curSize = Buffer[k].size();
-				for (int z = 0; z < curSize; z++)
+				tmpId.id = Buffer[k][0];
+				tmpId.next = NULL;
+				Heap.push(tmpId);
+				for (int z = 0; z < curSize; z++) {
 					cout << Buffer[k][z] << " ";
+				}
 
 				cout << endl;
 			}
 
-
-
+			cout << Heap.top().id << endl;
+			Heap.pop();
 			Buffer.clear();
 			getchar();
 		}
