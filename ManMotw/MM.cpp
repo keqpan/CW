@@ -7,14 +7,14 @@
 #include <algorithm>
 #include <cstdio>
 
-#include <boost/heap/priority_queue.hpp>
+//#include <boost/heap/priority_queue.hpp>
 
 #include <math.h>
 
 #include <windows.h>
 
 using namespace std;
-using namespace boost::heap;
+//using namespace boost::heap;
 
 struct itemTr {
 	int id;
@@ -30,6 +30,16 @@ struct item {
 
 bool myVecCmp(const vector <int> & i, const vector <int> & j) { 
 	return (i < j);
+}
+
+void stFree(struct item * x) {
+	struct item * tmp;
+	while (x != NULL) {
+		tmp = x;
+		x = x->next;
+		free(tmp);
+	}
+
 }
 
 typedef bool(*queComp)(const struct item &, const struct item &);
@@ -53,7 +63,7 @@ int main() {
 	/*bool(*foo)(const struct item &, const struct item &);
 	foo = &myQueCmp;*/
 
-	std::priority_queue <struct item, vector <struct item>, queComp> Heap(myQueCmp);
+	priority_queue <struct item, vector <struct item>, queComp> Heap(myQueCmp);
 
 	vector <int> tmp;
 
@@ -80,7 +90,7 @@ int main() {
 		MyStSt.clear();
 		MyStSt.str(str);
 
-		std::string tt = MyStSt.str();
+		string tt = MyStSt.str();
 
 		tmp.clear();
 
@@ -131,6 +141,8 @@ int main() {
 
 			if (curId != -1)
 				Heap.push(tmpId);
+
+			Heap.top().id = 22;
 
 			while (!Heap.empty())
 			{
