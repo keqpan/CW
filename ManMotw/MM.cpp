@@ -142,7 +142,7 @@ int main() {
 			if (curId != -1)
 				Heap.push(tmpId);
 
-			Heap.top().id = 22;
+			Heap.top().next = NULL;
 
 			while (!Heap.empty())
 			{
