@@ -40,16 +40,9 @@ bool myVecCmp(const vector <int> & i, const vector <int> & j) {
 }
 
 
-typedef bool(*mapComp)(const struct mapItem &, const struct mapItem &);
-bool myMapCmp(const struct mapItem & a, const struct mapItem & b) {
-	
-	return (*(a.mapList.front().id) > *(b.mapList.front().id));
 
-}
-
-
-void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int> & Heap, map <int, struct mapItem, mapComp> & Lists) {
-	map <int, struct mapItem, mapComp>::iterator itMap;
+void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int> & Heap, map <int, struct mapItem> & Lists) {
+	map <int, struct mapItem>::iterator itMap;
 	struct mapItem tmpMapItem;
 	struct Item tmpItem;
 
@@ -71,9 +64,15 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 	}
 }
 
-void mySetGen(vector < struct item > * Trie, priority_queue <int> & Heap, map <int, struct mapItem, mapComp> & Lists) {
+void mySetGen(vector < struct item > * Trie, priority_queue <int> & Heap, map <int, struct mapItem> & Lists) {
+	map <int, struct mapItem>::iterator itMap;
 
-	Heap
+	while (!Heap.empty())
+	{
+		itMap = Lists.find(Heap.top());
+		cout << Heap.top() << endl;
+		Heap.pop();
+	}
 
 	Lists.clear();
 }
@@ -83,13 +82,13 @@ int main() {
 	stringstream MyStSt;
 
 	vector < vector<int> > Buffer;
-	vector < struct item > Trie;
+	vector < struct itemTr > Trie;
 
 	/*bool(*foo)(const struct item &, const struct item &);
 	foo = &myQueCmp;*/
 
 	priority_queue <int> Heap;
-	map <int, struct mapItem, mapComp> Lists(myMapCmp);
+	map <int, struct mapItem> Lists;
 	//map <int, <int, forward_list<int*>, bool(*)(const struct item &, const struct item &)> Lists(myMapCmp); equivalent declaration of map with function pointer
 
 
@@ -143,23 +142,7 @@ int main() {
 				curSize = Buffer[k].size();
 
 				addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
-
-				/*if (Buffer[k][0] == curId) {
-					saveNext->next = (struct item *) malloc(sizeof(struct item));
-					saveNext = saveNext->next;
-					saveNext->id = curId;
-					saveNext->next = NULL;
-				}
-				else {
-					if (curId != -1)
-						Heap.push(tmpId);
-
-					curId = Buffer[k][0];
-					tmpId.id = curId;
-					tmpId.next = NULL;
-					saveNext = &tmpId;
-				}*/
-				
+		
 				for (int z = 0; z < curSize; z++) { // itemset test output
 					cout << Buffer[k][z] << " ";
 				}
@@ -167,11 +150,11 @@ int main() {
 				cout << endl;
 			}	
 
-			mySetGen(&Trie, Heap, Lists);
+			//mySetGen(&Trie, Heap, Lists);
+			
 			while (!Heap.empty())
 			{
-
-				cout << Heap.top().id << endl;
+				cout << Heap.top() << endl;
 				Heap.pop();
 			}
 
