@@ -4,6 +4,8 @@
 #include <sstream>
 #include <vector>
 #include <queue> 
+#include <map>
+#include <forward_list>
 #include <algorithm>
 #include <cstdio>
 
@@ -42,14 +44,18 @@ void stFree(struct item * x) {
 
 }
 
-typedef bool(*queComp)(const struct item &, const struct item &);
-bool myQueCmp(const struct item & a, const struct item & b) {
+
+typedef bool(*mapComp)(const struct item &, const struct item &);
+bool myMapCmp(const struct item & a, const struct item & b) {
 	
 	return (a.id > b.id);
 
 }
 
 
+void addItemToHeap(int x, priority_queue <int> & Heap, map <int, int, mapComp> & Lists) {
+	map<int, int, mapComp>::iterator itMap;
+}
 
 
 
@@ -63,7 +69,10 @@ int main() {
 	/*bool(*foo)(const struct item &, const struct item &);
 	foo = &myQueCmp;*/
 
-	priority_queue <struct item, vector <struct item>, queComp> Heap(myQueCmp);
+	priority_queue <int> Heap;
+	map <int, int, mapComp> Lists(myMapCmp);
+	//map <int, int, bool(*)(const struct item &, const struct item &)> Lists(myMapCmp); equivalent declaration of map with function pointer
+
 
 	vector <int> tmp;
 
@@ -109,14 +118,16 @@ int main() {
 
 			cout << "11 < 22" << endl;
 
-			sort(Buffer.begin(), Buffer.end(), myVecCmp);
+			//sort(Buffer.begin(), Buffer.end(), myVecCmp); there is no necessity to sort transactions
 			curId = -1;
 			saveNext = NULL;
 			bSize = Buffer.size();
 			for (int k = 0; k < bSize; k++) {
 				curSize = Buffer[k].size();
 
-				if (Buffer[k][0] == curId) {
+				addItemToHeap(Buffer[k][0]);
+
+				/*if (Buffer[k][0] == curId) {
 					saveNext->next = (struct item *) malloc(sizeof(struct item));
 					saveNext = saveNext->next;
 					saveNext->id = curId;
@@ -130,9 +141,9 @@ int main() {
 					tmpId.id = curId;
 					tmpId.next = NULL;
 					saveNext = &tmpId;
-				}
+				}*/
 				
-				for (int z = 0; z < curSize; z++) {
+				for (int z = 0; z < curSize; z++) { // itemset test output
 					cout << Buffer[k][z] << " ";
 				}
 
