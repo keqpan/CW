@@ -25,39 +25,58 @@ struct itemTr {
 	int level;
 };
 
-struct item {
-	int id;
-	struct item * next;
+struct Item {
+	vector<int>::iterator id;
+	vector<int>::iterator end;
+};
+
+struct mapItem {
+	int counts;
+	forward_list<struct Item> mapList;
 };
 
 bool myVecCmp(const vector <int> & i, const vector <int> & j) { 
 	return (i < j);
 }
 
-void stFree(struct item * x) {
-	struct item * tmp;
-	while (x != NULL) {
-		tmp = x;
-		x = x->next;
-		free(tmp);
-	}
 
-}
-
-
-typedef bool(*mapComp)(const struct item &, const struct item &);
-bool myMapCmp(const struct item & a, const struct item & b) {
+typedef bool(*mapComp)(const struct mapItem &, const struct mapItem &);
+bool myMapCmp(const struct mapItem & a, const struct mapItem & b) {
 	
-	return (a.id > b.id);
+	return (*(a.mapList.front().id) > *(b.mapList.front().id));
 
 }
 
 
-void addItemToHeap(int x, priority_queue <int> & Heap, map <int, int, mapComp> & Lists) {
-	map<int, int, mapComp>::iterator itMap;
+void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int> & Heap, map <int, struct mapItem, mapComp> & Lists) {
+	map <int, struct mapItem, mapComp>::iterator itMap;
+	struct mapItem tmpMapItem;
+	struct Item tmpItem;
+
+	itMap = Lists.find(*x);
+
+	if (itMap != Lists.end()) {
+		tmpItem.id = x;
+		tmpItem.end = end;
+		itMap->second.counts++;
+		itMap->second.mapList.push_front(tmpItem);
+	}
+	else {
+		Heap.push(*x);
+		tmpMapItem.counts = 1;
+		tmpItem.id = x;
+		tmpItem.end = end;
+		tmpMapItem.mapList = forward_list<struct Item>(1, tmpItem);
+		Lists.insert(pair<int, struct mapItem>(*x, tmpMapItem));
+	}
 }
 
+void mySetGen(vector < struct item > * Trie, priority_queue <int> & Heap, map <int, struct mapItem, mapComp> & Lists) {
 
+	Heap
+
+	Lists.clear();
+}
 
 int main() {
 	fstream myfile;
@@ -70,8 +89,8 @@ int main() {
 	foo = &myQueCmp;*/
 
 	priority_queue <int> Heap;
-	map <int, int, mapComp> Lists(myMapCmp);
-	//map <int, int, bool(*)(const struct item &, const struct item &)> Lists(myMapCmp); equivalent declaration of map with function pointer
+	map <int, struct mapItem, mapComp> Lists(myMapCmp);
+	//map <int, <int, forward_list<int*>, bool(*)(const struct item &, const struct item &)> Lists(myMapCmp); equivalent declaration of map with function pointer
 
 
 	vector <int> tmp;
@@ -79,10 +98,9 @@ int main() {
 
 	char fname[20];
 	int n, l, j;
-	int curId;
-	struct item * saveNext;
 	int bSize, curSize;
-	struct item tmpId;
+
+
 	string str;
 	/*cin >> fname;
 	myfile.open(fname);*/
@@ -119,13 +137,12 @@ int main() {
 			cout << "11 < 22" << endl;
 
 			//sort(Buffer.begin(), Buffer.end(), myVecCmp); there is no necessity to sort transactions
-			curId = -1;
-			saveNext = NULL;
+
 			bSize = Buffer.size();
 			for (int k = 0; k < bSize; k++) {
 				curSize = Buffer[k].size();
 
-				addItemToHeap(Buffer[k][0]);
+				addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
 
 				/*if (Buffer[k][0] == curId) {
 					saveNext->next = (struct item *) malloc(sizeof(struct item));
@@ -150,11 +167,7 @@ int main() {
 				cout << endl;
 			}	
 
-			if (curId != -1)
-				Heap.push(tmpId);
-
-			Heap.top().next = NULL;
-
+			mySetGen(&Trie, Heap, Lists);
 			while (!Heap.empty())
 			{
 
