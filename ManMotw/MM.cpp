@@ -137,7 +137,7 @@ int main() {
 				}
 
 				cout << endl;
-			}
+			}	
 
 			if (curId != -1)
 				Heap.push(tmpId);
