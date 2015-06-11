@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cstdio>
 
+#include <crtdbg.h> // библиотека для _CrtDumpMemoryLeaks
+
 //#include <boost/heap/priority_queue.hpp>
 
 #include <math.h>
@@ -72,7 +74,7 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 
 
 
-void SetGen(vector < struct item >::iterator idTrie, vector < struct item >::iterator idNewTrie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
+void SetGen(vector < struct itemTr >::iterator idTrie, vector < struct itemTr >::iterator idNewTrie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
 	map <int, struct mapItem>::iterator itMap;
 
 	while (!Heap.empty())
@@ -85,16 +87,28 @@ void SetGen(vector < struct item >::iterator idTrie, vector < struct item >::ite
 	Lists.clear();
 }
 
-void mySetGen(vector <vector < struct item > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
+void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
 	map <int, struct mapItem>::iterator itMap;
+	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
 
+	int topHeapId;
+
+	int trSize = Trie.size();
 	int k = 0;
 	while (!Heap.empty())
 	{
-		itMap = Lists.find(Heap.top());
-		cout << Heap.top() << endl;
-		if (Heap.top() == *((Trie[k][0]).id)) {
+		topHeapId = Heap.top();
+		itMap = Lists.find(topHeapId);
+		cout << topHeapId << endl;
 
+		for (; (*rootNodesTrie)[0].id < topHeapId && rootNodesTrie != Trie.end(); rootNodesTrie++) {
+
+
+		}
+
+		/*if (Heap.top() == *((Trie[k][0]).id)) {
+
+			k++;
 		}
 		else {
 			if (Heap.top() < *((Trie[k][0]).id)) {
@@ -102,11 +116,12 @@ void mySetGen(vector <vector < struct item > > & Trie, priority_queue <int, vect
 			}
 			else {
 
+				k++;
 			}
-		}
+		}*/
 		Heap.pop();
-		Trie[k].clear();
-		k++;
+		//Trie[k].clear();
+
 	}
 
 	Lists.clear();
@@ -135,7 +150,7 @@ int main() {
 	int b_curr = 0; // current bucket id
 
 	char fname[20];
-	int n, l, j;
+	int n, l, j = 1;
 	int bSize, curSize; // size of vectors of items
 
 
@@ -163,27 +178,26 @@ int main() {
 		}
 
 		//cout << str << '\n';
-		MyStSt.clear();
+
 		MyStSt.str(str);
 
-		string tt = MyStSt.str();
 
 		tmp.clear();
 
 		while (MyStSt >> n) {		
 			tmp.push_back(n);
 		}
-
+		MyStSt.clear();
 		Buffer.push_back(tmp);
 
 		cout << str << endl;
 		//cout << "aaf" << endl;
 
 		if (j > w) {
-			j = 1;
+			j = 0;
 		}
 
-		if (b > 20) {
+		if (b > 1) {
 
 
 
@@ -195,7 +209,7 @@ int main() {
 			for (int k = 0; k < bSize; k++) {
 				curSize = Buffer[k].size();
 
-				addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
+				//addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
 		
 				for (int z = 0; z < curSize; z++) { // itemset test output
 					cout << Buffer[k][z] << " ";
@@ -214,18 +228,46 @@ int main() {
 
 			Lists.clear();
 			Buffer.clear();
+			Lists.clear();
 
 			b = 0;
 
-			getchar();
+			//getchar();
 		}
 
 	}
-	//myfile.close();
+
+	if (j != 1) {
+		bSize = Buffer.size();
+		for (int k = 0; k < bSize; k++) {
+			curSize = Buffer[k].size();
+
+			//addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
+
+			for (int z = 0; z < curSize; z++) { // itemset test output
+				cout << Buffer[k][z] << " ";
+			}
+
+			cout << endl;
+		}
+
+		//mySetGen(&Trie, Heap, Lists);
+
+		while (!Heap.empty())
+		{
+			cout << Heap.top() << endl;
+			Heap.pop();
+		}
+
+		Lists.clear();
+		Buffer.clear();
+		Lists.clear();
+	}
+	myfile.close();
 	//myfile << "Writing this to a file.\n";
 	cout << "aaf" << endl;
 
+	_CrtDumpMemoryLeaks();
 	getchar();
-
 	return 0;
 }
