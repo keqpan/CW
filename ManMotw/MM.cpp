@@ -40,8 +40,14 @@ bool myVecCmp(const vector <int> & i, const vector <int> & j) {
 }
 
 
+typedef bool(*queComp)(const int &, const int &);
+bool myQueCmp(const int & a, const int & b) {
 
-void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int> & Heap, map <int, struct mapItem> & Lists) {
+	return (a > b); //to make min heap
+
+}
+
+void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
 	map <int, struct mapItem>::iterator itMap;
 	struct mapItem tmpMapItem;
 	struct Item tmpItem;
@@ -64,7 +70,7 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 	}
 }
 
-void mySetGen(vector < struct item > * Trie, priority_queue <int> & Heap, map <int, struct mapItem> & Lists) {
+void mySetGen(vector < struct item > * Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
 	map <int, struct mapItem>::iterator itMap;
 
 	while (!Heap.empty())
@@ -87,7 +93,7 @@ int main() {
 	/*bool(*foo)(const struct item &, const struct item &);
 	foo = &myQueCmp;*/
 
-	priority_queue <int> Heap;
+	priority_queue <int, vector<int>, queComp> Heap(myQueCmp);
 	map <int, struct mapItem> Lists;
 	//map <int, <int, forward_list<int*>, bool(*)(const struct item &, const struct item &)> Lists(myMapCmp); equivalent declaration of map with function pointer
 
@@ -158,7 +164,9 @@ int main() {
 				Heap.pop();
 			}
 
+			Lists.clear();
 			Buffer.clear();
+
 			getchar();
 		}
 
