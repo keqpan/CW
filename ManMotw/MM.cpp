@@ -21,18 +21,18 @@ using namespace std;
 struct itemTr {
 	int id;
 	int f;
-	int d;
+	int d; // error parameter
 	int level;
 };
 
-struct Item {
+struct item {
 	vector<int>::iterator id;
 	vector<int>::iterator end;
 };
 
 struct mapItem {
 	int counts;
-	forward_list<struct Item> mapList;
+	forward_list<struct item> mapList;
 };
 
 bool myVecCmp(const vector <int> & i, const vector <int> & j) { 
@@ -50,7 +50,7 @@ bool myQueCmp(const int & a, const int & b) {
 void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
 	map <int, struct mapItem>::iterator itMap;
 	struct mapItem tmpMapItem;
-	struct Item tmpItem;
+	struct item tmpItem;
 
 	itMap = Lists.find(*x);
 
@@ -65,12 +65,14 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 		tmpMapItem.counts = 1;
 		tmpItem.id = x;
 		tmpItem.end = end;
-		tmpMapItem.mapList = forward_list<struct Item>(1, tmpItem);
+		tmpMapItem.mapList = forward_list<struct item>(1, tmpItem);
 		Lists.insert(pair<int, struct mapItem>(*x, tmpMapItem));
 	}
 }
 
-void mySetGen(vector < struct item > * Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
+
+
+void SetGen(vector < struct item >::iterator idTrie, vector < struct item >::iterator idNewTrie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
 	map <int, struct mapItem>::iterator itMap;
 
 	while (!Heap.empty())
@@ -83,12 +85,39 @@ void mySetGen(vector < struct item > * Trie, priority_queue <int, vector<int>, q
 	Lists.clear();
 }
 
+void mySetGen(vector <vector < struct item > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
+	map <int, struct mapItem>::iterator itMap;
+
+	int k = 0;
+	while (!Heap.empty())
+	{
+		itMap = Lists.find(Heap.top());
+		cout << Heap.top() << endl;
+		if (Heap.top() == *((Trie[k][0]).id)) {
+
+		}
+		else {
+			if (Heap.top() < *((Trie[k][0]).id)) {
+
+			}
+			else {
+
+			}
+		}
+		Heap.pop();
+		Trie[k].clear();
+		k++;
+	}
+
+	Lists.clear();
+}
+
 int main() {
 	fstream myfile;
 	stringstream MyStSt;
 
 	vector < vector<int> > Buffer;
-	vector < struct itemTr > Trie;
+	vector <vector < struct item > > Trie;
 
 	/*bool(*foo)(const struct item &, const struct item &);
 	foo = &myQueCmp;*/
@@ -100,10 +129,14 @@ int main() {
 
 	vector <int> tmp;
 
+	double eps;
+	int w;
+	int b = 0; // the number of buckets
+	int b_curr = 0; // current bucket id
 
 	char fname[20];
 	int n, l, j;
-	int bSize, curSize;
+	int bSize, curSize; // size of vectors of items
 
 
 	string str;
@@ -111,13 +144,24 @@ int main() {
 	myfile.open(fname);*/
 	//system("cd");
 
+	cout << "Enter the error parameter: eps = ";
+	cin >> eps;
+
+	w = (int) ceil(1 / eps);
+
 	myfile.open("example.txt");
 	if (!myfile.is_open()) {
 		cout << "Error opening file!" << endl;
 		return -1;
 	}
 
-	for (j = 0; getline(myfile, str); j++) {
+	for (j = 1; getline(myfile, str); j++) {
+
+		if (j == 1) {
+			b++;
+			b_curr++;
+		}
+
 		//cout << str << '\n';
 		MyStSt.clear();
 		MyStSt.str(str);
@@ -135,8 +179,12 @@ int main() {
 		cout << str << endl;
 		//cout << "aaf" << endl;
 
-		if (j > 20) {
-			j = 0;
+		if (j > w) {
+			j = 1;
+		}
+
+		if (b > 20) {
+
 
 
 			cout << "11 < 22" << endl;
@@ -166,6 +214,8 @@ int main() {
 
 			Lists.clear();
 			Buffer.clear();
+
+			b = 0;
 
 			getchar();
 		}
