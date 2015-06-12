@@ -35,6 +35,10 @@ struct item {
 struct mapItem {
 	int counts;
 	forward_list<struct item> mapList;
+
+	~mapItem() {
+		mapList.~forward_list();
+	}
 };
 
 bool myVecCmp(const vector <int> & i, const vector <int> & j) { 
@@ -87,11 +91,50 @@ void SetGen(vector < struct itemTr >::iterator idTrie, vector < struct itemTr >:
 	Lists.clear();
 }
 
-void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
+void newRootNode(vector <vector < struct itemTr > > & newTrie, vector < struct itemTr >::iterator nodesTrie, vector < struct itemTr >::iterator end, int b_curr) {
+	int f; // frequency of set
+	int d; // max error in f
+	int l; // level in Trie
+	int cur_l;
+
+	vector < struct itemTr > tmp;
+
+	f = (*nodesTrie).f;
+	d = (*nodesTrie).d;
+	l = (*nodesTrie).level;
+
+	if (f + d > b_curr) {
+		tmp.push_back(*nodesTrie);
+
+		nodesTrie++;
+		while (nodesTrie != end) {
+
+			f = (*nodesTrie).f;
+			d = (*nodesTrie).d;
+			l = (*nodesTrie).level;
+
+			if (f + d > b_curr) {
+				tmp.push_back(*nodesTrie);
+			}
+			else {
+				for (; nodesTrie != end && (*nodesTrie).level >= l; nodesTrie++);
+			}
+
+		}
+
+		newTrie.push_back(tmp);
+	}
+
+
+}
+
+void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists, int b_curr, int b) {
 	map <int, struct mapItem>::iterator itMap;
 	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
-
-	int topHeapId;
+	vector <vector < struct itemTr > >  newTrie;
+	
+	int topHeapId; // top of the Heap
+	int f; // frequency of set
 
 	int trSize = Trie.size();
 	int k = 0;
@@ -102,29 +145,29 @@ void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, ve
 		cout << topHeapId << endl;
 
 		for (; (*rootNodesTrie)[0].id < topHeapId && rootNodesTrie != Trie.end(); rootNodesTrie++) {
-
-
+			newRootNode(newTrie, (*rootNodesTrie).begin(), (*rootNodesTrie).end(), b_curr);
+			(*rootNodesTrie).~vector();
 		}
 
-		/*if (Heap.top() == *((Trie[k][0]).id)) {
-
+		if (Heap.top() == (*rootNodesTrie)[0].id) {
+			f = (*itMap).second.counts;
+			//last point of edition
+			if (f + d > b_curr) {
 			k++;
 		}
 		else {
-			if (Heap.top() < *((Trie[k][0]).id)) {
+			if (Heap.top() < (*rootNodesTrie)[0].id) {
 
 			}
-			else {
 
-				k++;
-			}
-		}*/
+		}
 		Heap.pop();
 		//Trie[k].clear();
 
 	}
 
 	Lists.clear();
+	Trie = newTrie;
 }
 
 int main() {
@@ -170,7 +213,7 @@ int main() {
 		return -1;
 	}
 
-	for (j = 1; getline(myfile, str); j++) {
+	for (j = 1; getline(myfile, str) && j < 11; j++) {
 
 		if (j == 1) {
 			b++;
@@ -182,14 +225,14 @@ int main() {
 		MyStSt.str(str);
 
 
-		tmp.clear();
+
 
 		while (MyStSt >> n) {		
 			tmp.push_back(n);
 		}
 		MyStSt.clear();
 		Buffer.push_back(tmp);
-
+		tmp.clear();
 		cout << str << endl;
 		//cout << "aaf" << endl;
 
@@ -209,12 +252,13 @@ int main() {
 			for (int k = 0; k < bSize; k++) {
 				curSize = Buffer[k].size();
 
-				//addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
+				addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
 		
 				for (int z = 0; z < curSize; z++) { // itemset test output
 					cout << Buffer[k][z] << " ";
 				}
-
+				Buffer[k].clear();
+				Buffer[k].~vector();
 				cout << endl;
 			}	
 
@@ -226,9 +270,9 @@ int main() {
 				Heap.pop();
 			}
 
-			Lists.clear();
+			//Lists.clear();
 			Buffer.clear();
-			Lists.clear();
+			Trie.clear();
 
 			b = 0;
 
@@ -242,16 +286,17 @@ int main() {
 		for (int k = 0; k < bSize; k++) {
 			curSize = Buffer[k].size();
 
-			//addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
+			addItemToHeap(Buffer[k].begin(), Buffer[k].end(), Heap, Lists);
 
 			for (int z = 0; z < curSize; z++) { // itemset test output
 				cout << Buffer[k][z] << " ";
 			}
-
+			Buffer[k].clear();
+			Buffer[k].~vector();
 			cout << endl;
 		}
 
-		//mySetGen(&Trie, Heap, Lists);
+		mySetGen(&Trie, Heap, Lists);
 
 		while (!Heap.empty())
 		{
@@ -259,11 +304,16 @@ int main() {
 			Heap.pop();
 		}
 
-		Lists.clear();
+		//Lists.clear();
 		Buffer.clear();
-		Lists.clear();
+		Trie.clear();
 	}
+
+	Heap.~priority_queue();
+
 	myfile.close();
+
+
 	//myfile << "Writing this to a file.\n";
 	cout << "aaf" << endl;
 
