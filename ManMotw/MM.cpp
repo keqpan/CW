@@ -78,13 +78,62 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 
 
 
-void SetGen(vector < struct itemTr >::iterator idTrie, vector < struct itemTr >::iterator idNewTrie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
+void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::iterator nodeTrie, vector < struct itemTr >::iterator end, priority_queue <int, vector<int>, queComp> & Heap, int level, map <int, struct mapItem> & Lists, int b_curr, int b) {
 	map <int, struct mapItem>::iterator itMap;
+
+	priority_queue <int, vector<int>, queComp> Heap2;
+	map <int, struct mapItem> Lists2;
+
+	struct itemTr tmp;
+
+	int topId; //top element of the head
+	int f, d, l;
 
 	while (!Heap.empty())
 	{
-		itMap = Lists.find(Heap.top());
-		cout << Heap.top() << endl;
+		topId = Heap.top();
+		itMap = Lists.find(topId);
+		cout << topId << endl;
+
+
+		for (; nodeTrie != end && (*nodeTrie).level < level; nodeTrie++) {
+			f = (*nodeTrie).f;
+			d = (*nodeTrie).d;
+			l = (*nodeTrie).level;
+
+			if (f + d > b_curr) {
+				newNodeTrie.push_back(*nodeTrie);
+			}
+
+		}
+		if (topId == (*nodeTrie).id) {
+			f = (*nodeTrie).f + (*itMap).second.counts;
+			d = (*nodeTrie).d;
+
+			if (f + d > b_curr) {
+				tmp.id = topId;
+				tmp.f = f;
+				tmp.d = d;
+				tmp.level = level;
+
+				newNodeTrie.push_back(*nodeTrie);
+				nodeTrie++;
+
+				SetGen(newNodeTrie, nodeTrie, end, Heap2, level+1, Lists, b_curr, b);
+			}
+		}
+		else {
+			f = (*itMap).second.counts;
+			
+			if (f > b) {
+				tmp.id = topId;
+				tmp.f = f;
+				tmp.d = b_curr - b;
+				tmp.level = level;
+
+				SetGen(newNodeTrie, end, end, Heap2, level + 1, Lists, b_curr, b);
+			}
+		}
 		Heap.pop();
 	}
 
@@ -132,12 +181,14 @@ void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, ve
 	map <int, struct mapItem>::iterator itMap;
 	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
 	vector <vector < struct itemTr > >  newTrie;
-	
+
+
 	int topHeapId; // top of the Heap
 	int f; // frequency of set
+	int d; // max error in f
 
 	int trSize = Trie.size();
-	int k = 0;
+
 	while (!Heap.empty())
 	{
 		topHeapId = Heap.top();
@@ -150,14 +201,23 @@ void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, ve
 		}
 
 		if (Heap.top() == (*rootNodesTrie)[0].id) {
-			f = (*itMap).second.counts;
-			//last point of edition
+			f = (*rootNodesTrie)[0].f + (*itMap).second.counts;
+			d = (*rootNodesTrie)[0].d;
+
 			if (f + d > b_curr) {
-			k++;
+				newTrie.push_back(vector < struct itemTr >());
+				SetGen(*(newTrie.end()--), (*rootNodesTrie).begin(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+			}
 		}
 		else {
 			if (Heap.top() < (*rootNodesTrie)[0].id) {
+				f = (*itMap).second.counts;
 
+				if (f > b) {
+					newTrie.push_back(vector < struct itemTr >());
+					SetGen(*(newTrie.end()--), (*rootNodesTrie).end(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+
+				}
 			}
 
 		}
@@ -175,7 +235,7 @@ int main() {
 	stringstream MyStSt;
 
 	vector < vector<int> > Buffer;
-	vector <vector < struct item > > Trie;
+	vector <vector < struct itemTr > > Trie;
 
 	/*bool(*foo)(const struct item &, const struct item &);
 	foo = &myQueCmp;*/
@@ -262,7 +322,7 @@ int main() {
 				cout << endl;
 			}	
 
-			//mySetGen(&Trie, Heap, Lists);
+			mySetGen(Trie, Heap, Lists, b_curr, b);
 			
 			while (!Heap.empty())
 			{
@@ -296,7 +356,7 @@ int main() {
 			cout << endl;
 		}
 
-		mySetGen(&Trie, Heap, Lists);
+		mySetGen(Trie, Heap, Lists, b_curr, b);
 
 		while (!Heap.empty())
 		{
@@ -309,7 +369,6 @@ int main() {
 		Trie.clear();
 	}
 
-	Heap.~priority_queue();
 
 	myfile.close();
 
