@@ -55,6 +55,8 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 	struct mapItem tmpMapItem;
 	struct item tmpItem;
 
+	int tmp;
+
 	itMap = Lists.find(*x);
 
 	if (itMap != Lists.end()) {
@@ -64,6 +66,7 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 		itMap->second.mapList.push_front(tmpItem);
 	}
 	else {
+		tmp = *x;
 		Heap.push(*x);
 		tmpMapItem.counts = 1;
 		tmpItem.id = x;
@@ -76,7 +79,7 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::iterator nodeTrie, vector < struct itemTr >::iterator end, priority_queue <int, vector<int>, queComp> & Heap, int level, map <int, struct mapItem> & Lists, int b_curr, int b) {
 	map <int, struct mapItem>::iterator itMap;
 
-	priority_queue <int, vector<int>, queComp> Heap2;
+	priority_queue <int, vector<int>, queComp> Heap2(myQueCmp);
 	map <int, struct mapItem> Lists2;
 
 	forward_list<struct item>::iterator mapNodes;
@@ -117,8 +120,8 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				nodeTrie++;
 
 				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
-					if ((*mapNodes).id++ != (*mapNodes).end)
-						addItemToHeap((*mapNodes).id++, (*mapNodes).end, Heap2, Lists2);
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap2, Lists2);
 						
 				}
 
@@ -135,8 +138,8 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				tmp.level = level;
 
 				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
-					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id++ != (*mapNodes).end)
-						addItemToHeap((*mapNodes).id++, (*mapNodes).end, Heap2, Lists2);
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap2, Lists2);
 
 				}
 
