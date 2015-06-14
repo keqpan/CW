@@ -8,14 +8,7 @@
 #include <forward_list>
 #include <algorithm>
 #include <cstdio>
-
-#include <crtdbg.h> // _CrtDumpMemoryLeaks
-
-//#include <boost/heap/priority_queue.hpp>
-
 #include <math.h>
-
-#include <windows.h>
 
 using namespace std;
 //using namespace boost::heap;
@@ -391,7 +384,6 @@ int main() {
 	//myfile << "Writing this to a file.\n";
 	cout << "aaf" << endl;
 
-	_CrtDumpMemoryLeaks();
 	getchar();
 	return 0;
 }
