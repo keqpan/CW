@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cstdio>
 
-#include <crtdbg.h> // библиотека для _CrtDumpMemoryLeaks
+#include <crtdbg.h> // _CrtDumpMemoryLeaks
 
 //#include <boost/heap/priority_queue.hpp>
 
@@ -45,12 +45,9 @@ bool myVecCmp(const vector <int> & i, const vector <int> & j) {
 	return (i < j);
 }
 
-
 typedef bool(*queComp)(const int &, const int &);
 bool myQueCmp(const int & a, const int & b) {
-
 	return (a > b); //to make min heap
-
 }
 
 void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists) {
@@ -76,13 +73,13 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 	}
 }
 
-
-
 void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::iterator nodeTrie, vector < struct itemTr >::iterator end, priority_queue <int, vector<int>, queComp> & Heap, int level, map <int, struct mapItem> & Lists, int b_curr, int b) {
 	map <int, struct mapItem>::iterator itMap;
 
 	priority_queue <int, vector<int>, queComp> Heap2;
 	map <int, struct mapItem> Lists2;
+
+	forward_list<struct item>::iterator mapNodes;
 
 	struct itemTr tmp;
 
@@ -106,7 +103,7 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 			}
 
 		}
-		if (topId == (*nodeTrie).id) {
+		if (nodeTrie != end && topId == (*nodeTrie).id) {
 			f = (*nodeTrie).f + (*itMap).second.counts;
 			d = (*nodeTrie).d;
 
@@ -119,19 +116,31 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				newNodeTrie.push_back(*nodeTrie);
 				nodeTrie++;
 
-				SetGen(newNodeTrie, nodeTrie, end, Heap2, level+1, Lists, b_curr, b);
+				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+					if ((*mapNodes).id++ != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id++, (*mapNodes).end, Heap2, Lists2);
+						
+				}
+
+				SetGen(newNodeTrie, nodeTrie, end, Heap2, level+1, Lists2, b_curr, b);
 			}
 		}
 		else {
 			f = (*itMap).second.counts;
 			
-			if (f > b) {
+			if (f >= b) {
 				tmp.id = topId;
 				tmp.f = f;
 				tmp.d = b_curr - b;
 				tmp.level = level;
 
-				SetGen(newNodeTrie, end, end, Heap2, level + 1, Lists, b_curr, b);
+				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id++ != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id++, (*mapNodes).end, Heap2, Lists2);
+
+				}
+
+				SetGen(newNodeTrie, end, end, Heap2, level + 1, Lists2, b_curr, b);
 			}
 		}
 		Heap.pop();
@@ -177,11 +186,10 @@ void newRootNode(vector <vector < struct itemTr > > & newTrie, vector < struct i
 
 }
 
-void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists, int b_curr, int b) {
+void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int, vector<int>, queComp> & Heap, map <int, struct mapItem> & Lists, int b_curr, int b) {
 	map <int, struct mapItem>::iterator itMap;
 	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
 	vector <vector < struct itemTr > >  newTrie;
-
 
 	int topHeapId; // top of the Heap
 	int f; // frequency of set
@@ -195,30 +203,35 @@ void mySetGen(vector <vector < struct itemTr > > & Trie, priority_queue <int, ve
 		itMap = Lists.find(topHeapId);
 		cout << topHeapId << endl;
 
-		for (; (*rootNodesTrie)[0].id < topHeapId && rootNodesTrie != Trie.end(); rootNodesTrie++) {
+		for (; !Trie.empty() && (*rootNodesTrie)[0].id < topHeapId && rootNodesTrie != Trie.end(); rootNodesTrie++) {
 			newRootNode(newTrie, (*rootNodesTrie).begin(), (*rootNodesTrie).end(), b_curr);
 			(*rootNodesTrie).~vector();
 		}
 
-		if (Heap.top() == (*rootNodesTrie)[0].id) {
+		if (!Trie.empty() && Heap.top() == (*rootNodesTrie)[0].id) {
 			f = (*rootNodesTrie)[0].f + (*itMap).second.counts;
 			d = (*rootNodesTrie)[0].d;
 
 			if (f + d > b_curr) {
 				newTrie.push_back(vector < struct itemTr >());
-				SetGen(*(newTrie.end()--), (*rootNodesTrie).begin(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+
+				SetGen(*(--newTrie.end()), (*rootNodesTrie).begin(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
 			}
 		}
 		else {
-			if (Heap.top() < (*rootNodesTrie)[0].id) {
-				f = (*itMap).second.counts;
 
-				if (f > b) {
-					newTrie.push_back(vector < struct itemTr >());
-					SetGen(*(newTrie.end()--), (*rootNodesTrie).end(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+			f = (*itMap).second.counts;
 
-				}
+			if (f >= b) {
+				newTrie.push_back(vector < struct itemTr >());
+
+				if (Trie.empty())
+					SetGen(*(--newTrie.end()), (*(newTrie).begin()).begin(), (*(newTrie).begin()).begin(), Heap, 0, Lists, b_curr, b);
+				else
+					SetGen(*(--newTrie.end()), (*rootNodesTrie).end(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+
 			}
+
 
 		}
 		Heap.pop();
@@ -251,6 +264,7 @@ int main() {
 	int w;
 	int b = 0; // the number of buckets
 	int b_curr = 0; // current bucket id
+	int buck_size = 20;
 
 	char fname[20];
 	int n, l, j = 1;
@@ -300,7 +314,7 @@ int main() {
 			j = 0;
 		}
 
-		if (b > 1) {
+		if (b > buck_size) {
 
 
 
@@ -317,12 +331,11 @@ int main() {
 				for (int z = 0; z < curSize; z++) { // itemset test output
 					cout << Buffer[k][z] << " ";
 				}
-				Buffer[k].clear();
-				Buffer[k].~vector();
+
 				cout << endl;
 			}	
 
-			mySetGen(Trie, Heap, Lists, b_curr, b);
+			makeNewTrie(Trie, Heap, Lists, b_curr, b);
 			
 			while (!Heap.empty())
 			{
@@ -351,12 +364,11 @@ int main() {
 			for (int z = 0; z < curSize; z++) { // itemset test output
 				cout << Buffer[k][z] << " ";
 			}
-			Buffer[k].clear();
-			Buffer[k].~vector();
+
 			cout << endl;
 		}
 
-		mySetGen(Trie, Heap, Lists, b_curr, b);
+		makeNewTrie(Trie, Heap, Lists, b_curr, b);
 
 		while (!Heap.empty())
 		{
