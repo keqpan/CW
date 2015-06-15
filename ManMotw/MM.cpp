@@ -116,7 +116,13 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				}
 
 				SetGen(newNodeTrie, nodeTrie, end, Heap2, level+1, Lists2, b_curr, b);
+
 				Heap.pop();
+
+				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap, Lists);
+				}
 			}
 		}
 		else {
@@ -133,12 +139,16 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
 					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
 						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap2, Lists2);
-
 				}
 
 				SetGen(newNodeTrie, end, end, Heap2, level + 1, Lists2, b_curr, b);
+
 				Heap.pop();
 
+				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap, Lists);
+				}
 			}
 			else
 				Heap.pop();
@@ -189,7 +199,7 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 	map <int, struct mapItem>::iterator itMap;
 	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
 	vector <vector < struct itemTr > >  newTrie;
-
+	forward_list<struct item>::iterator mapNodes;
 	vector < struct itemTr > tmp;
 
 	int topHeapId; // top of the Heap
@@ -228,9 +238,12 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 
 				SetGen(*(--newTrie.end()), tmp.begin(), tmp.begin(), Heap, 0, Lists, b_curr, b);
 
+
 			}
-			else
+			else {
 				Heap.pop();
+
+			}
 		}
 
 		//Trie[k].clear();
@@ -263,9 +276,13 @@ void printItemsets(vector <vector < struct itemTr > > & Trie, double s, double e
 				nodesTrie++;
 			}
 			else {
-				while (nodesTrie != (*rootNodesTrie).end() && (*nodesTrie).level >= cur_l - 1) {
-					nodesTrie++;
+				if (nodesTrie != (*rootNodesTrie).end() && (*nodesTrie).level >= cur_l - 1) {
+					while (nodesTrie != (*rootNodesTrie).end() && (*nodesTrie).level >= cur_l - 1) {
+						nodesTrie++;
+					}
 				}
+				else
+					nodesTrie++;
 			}
 		}
 	}
