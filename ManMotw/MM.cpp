@@ -48,8 +48,6 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 	struct mapItem tmpMapItem;
 	struct item tmpItem;
 
-	int tmp;
-
 	itMap = Lists.find(*x);
 
 	if (itMap != Lists.end()) {
@@ -59,7 +57,6 @@ void addItemToHeap(vector<int>::iterator x, vector<int>::iterator end, priority_
 		itMap->second.mapList.push_front(tmpItem);
 	}
 	else {
-		tmp = *x;
 		Heap.push(*x);
 		tmpMapItem.counts = 1;
 		tmpItem.id = x;
@@ -109,7 +106,7 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				tmp.d = d;
 				tmp.level = level;
 
-				newNodeTrie.push_back(*nodeTrie);
+				newNodeTrie.push_back(tmp);
 				nodeTrie++;
 
 				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
@@ -119,6 +116,7 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				}
 
 				SetGen(newNodeTrie, nodeTrie, end, Heap2, level+1, Lists2, b_curr, b);
+				Heap.pop();
 			}
 		}
 		else {
@@ -130,6 +128,8 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				tmp.d = b_curr - b;
 				tmp.level = level;
 
+				newNodeTrie.push_back(tmp);
+
 				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
 					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
 						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap2, Lists2);
@@ -137,9 +137,12 @@ void SetGen(vector < struct itemTr > & newNodeTrie, vector < struct itemTr >::it
 				}
 
 				SetGen(newNodeTrie, end, end, Heap2, level + 1, Lists2, b_curr, b);
+				Heap.pop();
+
 			}
+			else
+				Heap.pop();
 		}
-		Heap.pop();
 	}
 
 	Lists.clear();
@@ -187,6 +190,8 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
 	vector <vector < struct itemTr > >  newTrie;
 
+	vector < struct itemTr > tmp;
+
 	int topHeapId; // top of the Heap
 	int f; // frequency of set
 	int d; // max error in f
@@ -221,22 +226,53 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 			if (f >= b) {
 				newTrie.push_back(vector < struct itemTr >());
 
-				if (Trie.empty())
-					SetGen(*(--newTrie.end()), (*(newTrie).begin()).begin(), (*(newTrie).begin()).begin(), Heap, 0, Lists, b_curr, b);
-				else
-					SetGen(*(--newTrie.end()), (*rootNodesTrie).end(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+				SetGen(*(--newTrie.end()), tmp.begin(), tmp.begin(), Heap, 0, Lists, b_curr, b);
 
 			}
-
-
+			else
+				Heap.pop();
 		}
-		Heap.pop();
+
 		//Trie[k].clear();
 
 	}
 
 	Lists.clear();
 	Trie = newTrie;
+}
+
+void printItemsets(vector <vector < struct itemTr > > & Trie, double s, double eps, int N) {
+	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
+	vector < struct itemTr >::iterator nodesTrie;
+
+	int arr[100];
+	int cur_l = 0;
+
+	ofstream outFile;
+	outFile.open("output.txt", ofstream::out | ofstream::trunc);
+
+	for (; rootNodesTrie != Trie.end(); rootNodesTrie++) {
+		for (nodesTrie = (*rootNodesTrie).begin(); nodesTrie != (*rootNodesTrie).end();) {
+			if ((double)(*nodesTrie).f >= (s - eps)*N) {
+				cur_l = (double)(*nodesTrie).level + 1;
+				arr[cur_l - 1] = (double)(*nodesTrie).id;
+				for (int i = 0; i < cur_l; i++)
+					outFile << arr[i] << " ";
+				outFile << "\n";
+
+				nodesTrie++;
+			}
+			else {
+				while (nodesTrie != (*rootNodesTrie).end() && (*nodesTrie).level >= cur_l - 1) {
+					nodesTrie++;
+				}
+			}
+		}
+	}
+
+	outFile << "End of output.\n";
+	outFile.close();
+
 }
 
 int main() {
@@ -256,7 +292,8 @@ int main() {
 
 	vector <int> tmp;
 
-	double eps;
+	double eps, s;
+	int N = 0;
 	int w;
 	int b = 0; // the number of buckets
 	int b_curr = 0; // current bucket id
@@ -272,12 +309,14 @@ int main() {
 	myfile.open(fname);*/
 	//system("cd");
 
+	cout << "Enter the support parameter: s = ";
+	cin >> s;
 	cout << "Enter the error parameter: eps = ";
 	cin >> eps;
 
 	w = (int) ceil(1 / eps);
 
-	myfile.open("example.txt");
+	myfile.open("ex2.txt");
 	if (!myfile.is_open()) {
 		cout << "Error opening file!" << endl;
 		return -1;
@@ -300,6 +339,7 @@ int main() {
 		while (MyStSt >> n) {		
 			tmp.push_back(n);
 		}
+		N++;
 		MyStSt.clear();
 		Buffer.push_back(tmp);
 		tmp.clear();
@@ -341,7 +381,6 @@ int main() {
 
 			//Lists.clear();
 			Buffer.clear();
-			Trie.clear();
 
 			b = 0;
 
@@ -374,7 +413,6 @@ int main() {
 
 		//Lists.clear();
 		Buffer.clear();
-		Trie.clear();
 	}
 
 
@@ -383,7 +421,7 @@ int main() {
 
 	//myfile << "Writing this to a file.\n";
 	cout << "aaf" << endl;
-
+	printItemsets(Trie, s, eps, N);
 	getchar();
 	return 0;
 }
