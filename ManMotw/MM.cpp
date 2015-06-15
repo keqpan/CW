@@ -200,7 +200,10 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 	vector <vector < struct itemTr > >::iterator rootNodesTrie = Trie.begin();
 	vector <vector < struct itemTr > >  newTrie;
 	forward_list<struct item>::iterator mapNodes;
-	vector < struct itemTr > tmp;
+	struct itemTr tmp;
+	vector < struct itemTr > tmpVec;
+	priority_queue <int, vector<int>, queComp> Heap2(myQueCmp);
+	map <int, struct mapItem> Lists2;
 
 	int topHeapId; // top of the Heap
 	int f; // frequency of set
@@ -224,9 +227,20 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 			d = (*rootNodesTrie)[0].d;
 
 			if (f + d > b_curr) {
-				newTrie.push_back(vector < struct itemTr >());
 
-				SetGen(*(--newTrie.end()), (*rootNodesTrie).begin(), (*rootNodesTrie).end(), Heap, 0, Lists, b_curr, b);
+				tmp.id = topHeapId;
+				tmp.f = f;
+				tmp.d = d;
+				tmp.level = 0;
+
+				newTrie.push_back(vector < struct itemTr >(1, tmp));
+
+				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap2, Lists2);
+				}
+
+				SetGen(*(--newTrie.end()), (*rootNodesTrie).begin()+1, (*rootNodesTrie).end(), Heap2, 1, Lists2, b_curr, b);
 			}
 		}
 		else {
@@ -234,16 +248,25 @@ void makeNewTrie(vector <vector < struct itemTr > > & Trie, priority_queue <int,
 			f = (*itMap).second.counts;
 
 			if (f >= b) {
-				newTrie.push_back(vector < struct itemTr >());
+				tmp.id = topHeapId;
+				tmp.f = f;
+				tmp.d = b_curr - b;
+				tmp.level = 0;
 
-				SetGen(*(--newTrie.end()), tmp.begin(), tmp.begin(), Heap, 0, Lists, b_curr, b);
+				newTrie.push_back(vector < struct itemTr >(1, tmp));
 
+				for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+					if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+						addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap2, Lists2);
+				}
 
+				SetGen(*(--newTrie.end()), tmpVec.begin(), tmpVec.begin(), Heap2, 1, Lists2, b_curr, b);
 			}
-			else {
-				Heap.pop();
-
-			}
+		}
+		Heap.pop();
+		for (mapNodes = (*itMap).second.mapList.begin(); mapNodes != (*itMap).second.mapList.end(); mapNodes++) {
+			if ((*mapNodes).id != (*mapNodes).end && (*mapNodes).id + 1 != (*mapNodes).end)
+				addItemToHeap((*mapNodes).id + 1, (*mapNodes).end, Heap, Lists);
 		}
 
 		//Trie[k].clear();
